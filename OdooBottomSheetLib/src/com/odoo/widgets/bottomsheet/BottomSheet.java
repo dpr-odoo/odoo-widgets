@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Handler;
 import android.support.v7.internal.view.menu.MenuBuilder;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.odoo.widgets.bottomsheet.BottomSheetListeners.OnSheetActionClickListener;
 import com.odoo.widgets.bottomsheet.BottomSheetListeners.OnSheetItemClickListener;
 
 /**
@@ -158,13 +160,54 @@ public class BottomSheet extends RelativeLayout {
 						@Override
 						public void run() {
 							mItemListener.onItemClick(BottomSheet.this, item,
-									item.getItemId());
+									mBuilder.getExtraData());
 						}
 					}, 100);
 				}
 			});
 		}
 		return view;
+	}
+
+	private void prepareTitle(RelativeLayout layout) {
+		String title = mBuilder.getSheetTitle();
+		final OnSheetActionClickListener actionListener = mBuilder
+				.getActionListener();
+		TextView sheet_title = (TextView) layout.findViewById(R.id.sheet_title);
+		ImageView sheet_action = (ImageView) layout
+				.findViewById(R.id.sheet_action);
+		if (actionListener != null) {
+			sheet_action.setVisibility(View.VISIBLE);
+			sheet_action.setColorFilter(mBuilder.getIconColor());
+			if (mBuilder.getActionIcon() != 0) {
+				sheet_action.setImageResource(mBuilder.getActionIcon());
+			} else {
+				sheet_action.setImageResource(R.drawable.ic_launcher);
+			}
+			sheet_action.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					actionListener.onSheetActionClick(BottomSheet.this,
+							mBuilder.getExtraData());
+				}
+			});
+		} else {
+			sheet_action.setVisibility(View.INVISIBLE);
+		}
+		if (title != null) {
+			
+			layout.findViewById(R.id.sheet_title_view).setVisibility(
+					View.VISIBLE);
+			layout.findViewById(R.id.sheet_title_divider).setVisibility(
+					View.VISIBLE);
+			sheet_title.setText(title);
+			sheet_title.setTextColor(mBuilder.getTextColor());
+		} else {
+			layout.findViewById(R.id.sheet_title_view).setVisibility(View.GONE);
+			layout.findViewById(R.id.sheet_title_divider).setVisibility(
+					View.GONE);
+		}
 	}
 
 	private void init(Context context) {
@@ -174,6 +217,8 @@ public class BottomSheet extends RelativeLayout {
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
 				getScreenWidth(), ViewGroup.LayoutParams.WRAP_CONTENT);
 		layout.setLayoutParams(params);
+
+		prepareTitle(layout);
 		prepareMenus(layout);
 		// Showing
 		ViewGroup root = (ViewGroup) ((Activity) context)
@@ -227,11 +272,14 @@ public class BottomSheet extends RelativeLayout {
 		private Context mContext;
 		private Resources mRes;
 
-		private String mSheetTitle;
+		private String mSheetTitle = null;
 		private Integer mSheetMenu;
-		private BottomSheetListeners.OnSheetItemClickListener mItemListener = null;
+		private OnSheetItemClickListener mItemListener = null;
+		private OnSheetActionClickListener mOnSheetActionClickListener = null;
 		private Integer textColor = Color.BLACK;
 		private Integer iconColor = Color.BLACK;
+		private Object data = null;
+		private Integer actionIcon = 0;
 
 		public Builder(Context context) {
 			mContext = context;
@@ -239,13 +287,44 @@ public class BottomSheet extends RelativeLayout {
 		}
 
 		public Builder title(int res_id) {
-			title(mRes.getString(res_id));
+			try {
+				title(mRes.getString(res_id));
+			} catch (Exception e) {
+				Log.e(TAG, e.getMessage());
+			}
 			return this;
+		}
+
+		public Builder setData(Object extra_data) {
+			data = extra_data;
+			return this;
+		}
+
+		public Builder setActionIcon(int res_id) {
+			actionIcon = res_id;
+			return this;
+		}
+
+		public int getActionIcon() {
+			return actionIcon;
+		}
+
+		public Object getExtraData() {
+			return data;
 		}
 
 		public Builder title(CharSequence title) {
 			mSheetTitle = title.toString();
 			return this;
+		}
+
+		public Builder actionListener(OnSheetActionClickListener listener) {
+			mOnSheetActionClickListener = listener;
+			return this;
+		}
+
+		public OnSheetActionClickListener getActionListener() {
+			return mOnSheetActionClickListener;
 		}
 
 		public Builder setIconColor(int color) {
