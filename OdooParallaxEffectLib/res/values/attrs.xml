@@ -7,7 +7,9 @@
         <attr name="inner_parallax_factor" format="float" />
         <attr name="parallax_views_num" format="integer" />
         <attr name="circular_parallax" format="boolean" />
-        <attr name="parallax_overlay_color" format="color|reference"></attr>
+        <attr name="parallax_overlay_color" format="color|reference" />
+        <attr name="parallax_actionbar_height" format="dimension" />
+        <attr name="parallax_actionbar_title_font_size" format="dimension" />
     </declare-styleable>
 
 </resources>

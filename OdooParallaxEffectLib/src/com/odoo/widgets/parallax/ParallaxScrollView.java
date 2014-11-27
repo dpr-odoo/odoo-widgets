@@ -29,6 +29,8 @@ public class ParallaxScrollView extends ScrollView {
 	private ArrayList<ParallaxedView> parallaxedViews = new ArrayList<ParallaxedView>();
 	private OnParallaxScrollView mOnParallaxScrollView;
 	private int parallax_overlay_color = Color.BLACK;
+	private float parallax_actionbar_height = 0.0f;
+	private float parallax_actionbar_title_font_size = 0.0f;
 
 	private ActionBar mActionBar = null;
 
@@ -75,6 +77,15 @@ public class ParallaxScrollView extends ScrollView {
 				DEFAULT_PARALLAX_VIEWS);
 		parallax_overlay_color = typeArray.getColor(
 				R.styleable.ParallaxScroll_parallax_overlay_color, Color.BLACK);
+		parallax_actionbar_height = typeArray
+				.getDimension(
+						R.styleable.ParallaxScroll_parallax_actionbar_height,
+						getContext().getResources().getDimension(
+								R.dimen.actionBarSize));
+		parallax_actionbar_title_font_size = typeArray.getDimension(
+				R.styleable.ParallaxScroll_parallax_actionbar_title_font_size,
+				getContext().getResources()
+						.getDimension(R.dimen.actionFontSize));
 		typeArray.recycle();
 	}
 
@@ -121,14 +132,12 @@ public class ParallaxScrollView extends ScrollView {
 		super.onScrollChanged(l, t, oldl, oldt);
 		float parallax = parallaxFactor;
 		float alpha = alphaFactor;
+		t = (t < 0) ? 0 : t;
 		for (ParallaxedView parallaxedView : parallaxedViews) {
-			parallaxedView.setOffset((float) t / parallax);
-			int action_bar = (int) (parallaxedView.getView().getBottom() - getContext()
-					.getResources().getDimension(R.dimen.actionBarSize));
 
+			int action_bar = (int) (parallaxedView.getView().getBottom() - parallax_actionbar_height);
 			if (titleBar != null) {
-				float min = getContext().getResources().getDimension(
-						R.dimen.actionFontSize);
+				float min = parallax_actionbar_title_font_size;
 				float max = titleBarFontSize;
 				float decrease = ((min * action_bar) / t);
 				decrease = (decrease > max) ? max : decrease;
@@ -159,6 +168,8 @@ public class ParallaxScrollView extends ScrollView {
 					}
 				}
 			}
+			float offset = ((float) t / parallax);
+			parallaxedView.setOffset(offset);
 			parallax *= innerParallaxFactor;
 			if (alpha != DEFAULT_ALPHA_FACTOR) {
 				float fixedAlpha = (t <= 0) ? 1 : (100 / ((float) t * alpha));
