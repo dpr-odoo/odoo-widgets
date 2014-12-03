@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import com.odoo.widgets.bottomsheet.BottomSheetListeners.OnSheetActionClickListener;
 import com.odoo.widgets.bottomsheet.BottomSheetListeners.OnSheetItemClickListener;
+import com.odoo.widgets.bottomsheet.BottomSheetListeners.OnSheetMenuCreateListener;
 
 /**
  * Bottom Sheet Library
@@ -44,6 +45,7 @@ public class BottomSheet extends RelativeLayout {
 	private Boolean mShowing = false;
 	private Boolean mIsDismissing = false;
 	private OnSheetItemClickListener mItemListener = null;
+	private OnSheetMenuCreateListener mOnSheetMenuCreateListener = null;
 
 	public BottomSheet(Context context) {
 		super(context);
@@ -55,6 +57,12 @@ public class BottomSheet extends RelativeLayout {
 		mMenu = new MenuBuilder(mContext);
 		MenuInflater inflator = ((Activity) mContext).getMenuInflater();
 		inflator.inflate(mBuilder.getSheetMenu(), mMenu);
+		if (mBuilder.getOnSheetMenuCreateListener() != null) {
+			mOnSheetMenuCreateListener = mBuilder
+					.getOnSheetMenuCreateListener();
+			mOnSheetMenuCreateListener.onSheetMenuCreate(mMenu,
+					mBuilder.getExtraData());
+		}
 		mItemListener = mBuilder.getSheetItemListener();
 		return this;
 	}
@@ -196,7 +204,7 @@ public class BottomSheet extends RelativeLayout {
 			sheet_action.setVisibility(View.INVISIBLE);
 		}
 		if (title != null) {
-			
+
 			layout.findViewById(R.id.sheet_title_view).setVisibility(
 					View.VISIBLE);
 			layout.findViewById(R.id.sheet_title_divider).setVisibility(
@@ -276,6 +284,7 @@ public class BottomSheet extends RelativeLayout {
 		private Integer mSheetMenu;
 		private OnSheetItemClickListener mItemListener = null;
 		private OnSheetActionClickListener mOnSheetActionClickListener = null;
+		private OnSheetMenuCreateListener mOnSheetMenuCreateListener = null;
 		private Integer textColor = Color.BLACK;
 		private Integer iconColor = Color.BLACK;
 		private Object data = null;
@@ -370,6 +379,16 @@ public class BottomSheet extends RelativeLayout {
 
 		public BottomSheet create() {
 			return new BottomSheet(mContext).setBuilder(this);
+		}
+
+		public Builder setOnSheetMenuCreateListener(
+				OnSheetMenuCreateListener listener) {
+			mOnSheetMenuCreateListener = listener;
+			return this;
+		}
+
+		public OnSheetMenuCreateListener getOnSheetMenuCreateListener() {
+			return mOnSheetMenuCreateListener;
 		}
 	}
 
